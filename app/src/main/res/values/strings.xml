@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Quiz App vol.2</string>
+    <string name="image_description">Image Description</string>
+    <string name="delete">Delete</string>
+    <string name="score">"Score: "</string>
+</resources>
