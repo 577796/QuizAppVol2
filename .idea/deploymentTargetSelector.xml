@@ -8,9 +8,6 @@
       <SelectionState runConfigName="GalleryActivityTest">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="MainActivityTest">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="GalleryImageCountTest">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>

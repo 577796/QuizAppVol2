@@ -19,11 +19,15 @@ public class QuizActivity extends AppCompatActivity implements QuizButtonsFragme
     private List<ImageItem> quizItems;
     private int currentQuestion;
     private ExecutorService executorService;
+    private int score;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.quiz_view);
+
+        score = 0;
+        currentQuestion = 0;
 
         if (executorService == null) {
             executorService = Executors.newSingleThreadExecutor();
@@ -31,7 +35,7 @@ public class QuizActivity extends AppCompatActivity implements QuizButtonsFragme
 
         executorService.execute(() -> {
             quizItems = loadFromDB();
-            if (!quizItems.isEmpty()) {
+            if (quizItems != null && !quizItems.isEmpty()) {
                 runOnUiThread(this::loadNextQuestion);
             } else {
                 runOnUiThread(() -> Toast.makeText(this, "No images in database!", Toast.LENGTH_LONG).show());
@@ -66,12 +70,11 @@ public class QuizActivity extends AppCompatActivity implements QuizButtonsFragme
         currentQuestion++;
     }
 
-
     private List<ImageItem> loadFromDB() {
         ImageDatabase db = ImageDatabase.getInstance(this);
-        List<ImageItem> images = db.imageItemDAO().getAllImages();
+        List<ImageItem> images = db.imageItemDAO().getAllImagesSync(); // Use a synchronous call to avoid LiveData issues
 
-        if (images.isEmpty()) {
+        if (images == null || images.isEmpty()) {
             runOnUiThread(() -> Toast.makeText(this, "No images found in the database!", Toast.LENGTH_LONG).show());
         } else {
             java.util.Collections.shuffle(images);
@@ -92,4 +95,5 @@ public class QuizActivity extends AppCompatActivity implements QuizButtonsFragme
 
     @Override
     public void onAnswerSelected(boolean isCorrect) {}
+
 }

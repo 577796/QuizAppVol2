@@ -18,7 +18,7 @@ import java.util.concurrent.Executors;
 
 import no.hvl.quizappvol2.DAO.ImageItemDAO;
 
-@Database(entities = {ImageItem.class}, version = 1, exportSchema = false)
+@Database(entities = {ImageItem.class}, version = 2, exportSchema = false)
 public abstract class ImageDatabase extends RoomDatabase {
 
     private static ImageDatabase INSTANCE;

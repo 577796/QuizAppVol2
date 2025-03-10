@@ -1,4 +1,3 @@
-// QuizButtonsFragment.java
 package no.hvl.quizappvol2.Fragments;
 
 import android.graphics.Color;
@@ -8,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,9 +22,10 @@ public class QuizButtonsFragment extends Fragment {
 
     private static final String CORRECT_ANSWER_KEY = "correct_answer";
     private static final String OPTIONS_KEY = "options";
+    private static final String SCORE_KEY = "score"; // ✅ Store score
     private Button answer1, answer2, answer3, next;
     private TextView scoreText;
-    private int score;
+    private static int score;
     private String correctAnswer;
     private List<String> options;
 
@@ -41,6 +40,7 @@ public class QuizButtonsFragment extends Fragment {
         Bundle args = new Bundle();
         args.putString(CORRECT_ANSWER_KEY, correctAnswer);
         args.putStringArrayList(OPTIONS_KEY, options);
+        args.putInt(SCORE_KEY, score);
         fragment.setArguments(args);
         return fragment;
     }
@@ -63,6 +63,7 @@ public class QuizButtonsFragment extends Fragment {
         if (getArguments() != null) {
             correctAnswer = getArguments().getString(CORRECT_ANSWER_KEY);
             options = getArguments().getStringArrayList(OPTIONS_KEY);
+            score = getArguments().getInt(SCORE_KEY);
         }
 
         scoreText.setText("Score: " + score);
@@ -80,7 +81,7 @@ public class QuizButtonsFragment extends Fragment {
         return view;
     }
 
-    public void loadNextQuestion(){
+    public void loadNextQuestion() {
         if (listener != null) {
             listener.onAnswerSelected(false);
             ((QuizActivity) getActivity()).loadNextQuestion();
@@ -99,6 +100,7 @@ public class QuizButtonsFragment extends Fragment {
         if (selectedAnswer.equals(correctAnswer)) {
             selectedButton.setBackgroundColor(Color.GREEN);
             score++;
+            scoreText.setText("Score: " + score);
             if (listener != null) {
                 listener.onAnswerSelected(true);
             }

@@ -1,8 +1,6 @@
 package no.hvl.quizappvol2;
 
-import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.opengl.Visibility;
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
@@ -13,55 +11,44 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
-import java.io.File;
+import com.bumptech.glide.Glide;
 import java.util.List;
-
-import no.hvl.quizappvol2.Activity.GalleryActivity;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import no.hvl.quizappvol2.DAO.ImageItemDAO;
+import no.hvl.quizappvol2.ImageDatabase;
 
-public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHolder>{
-
+public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHolder> {
+    private Context context;
     private List<ImageItem> imageList;
-    private ImageItemDAO dao;
-    private GalleryActivity galleryActivity;
+    private final ImageItemDAO imageItemDAO;
+    private final ExecutorService executorService;
 
-    public RecyclerAdapter(List<ImageItem> imageList, ImageItemDAO dao, GalleryActivity galleryActivity) {
+    public RecyclerAdapter(Context context, List<ImageItem> imageList) {
+        this.context = context;
         this.imageList = imageList;
-        this.dao = dao;
-        this.galleryActivity = galleryActivity;
+        this.imageItemDAO = ImageDatabase.getInstance(context).imageItemDAO();
+        this.executorService = Executors.newSingleThreadExecutor();
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.custom_single_image, parent, false);
+        View view = LayoutInflater.from(context).inflate(R.layout.custom_single_image, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ImageItem item = imageList.get(position);
+        holder.descriptionText.setText(item.getDescription());
 
-        holder.imageView.setImageBitmap(BitmapFactory.decodeFile(item.getImagePath()));
-        holder.description.setText(item.getDescription());
-        holder.deleteBtn.setOnClickListener(v -> deleteImage(holder.getAdapterPosition()));
-    }
+        Glide.with(context)
+                .load(item.getImagePath())
+                .into(holder.imageView);
 
-    public void deleteImage(int position) {
-        ImageItem item = imageList.get(position);
-        new Thread(() -> {
-            dao.deleteImage(item);
-            new Handler(Looper.getMainLooper()).post(() -> {
-                imageList.remove(position);
-                notifyItemRemoved(position);
-                notifyItemRangeChanged(position, imageList.size());
-
-                if (galleryActivity != null) {
-                    galleryActivity.updateImageCount(imageList.size());
-                }
-            });
-        }).start();
+        // Handle delete button click
+        holder.deleteButton.setOnClickListener(v -> deleteImage(item, position));
     }
 
     @Override
@@ -69,16 +56,35 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
         return imageList.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public void updateData(List<ImageItem> newList) {
+        this.imageList = newList;
+        notifyDataSetChanged();
+    }
+
+    private void deleteImage(ImageItem imageItem, int position) {
+        executorService.execute(() -> {
+            imageItemDAO.deleteImage(imageItem);
+            imageList.remove(position);
+
+            // Ensure UI updates are done on the main thread
+            new Handler(Looper.getMainLooper()).post(() -> {
+                notifyItemRemoved(position);
+            });
+        });
+    }
+
+
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
-        TextView description;
-        Button deleteBtn;
+        TextView descriptionText;
+        Button deleteButton;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.image);
-            description = itemView.findViewById(R.id.description);
-            deleteBtn = itemView.findViewById(R.id.btnDelete);
+            descriptionText = itemView.findViewById(R.id.description);
+            deleteButton = itemView.findViewById(R.id.btnDelete);
         }
     }
 }
