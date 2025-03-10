@@ -22,7 +22,7 @@ public class QuizButtonsFragment extends Fragment {
 
     private static final String CORRECT_ANSWER_KEY = "correct_answer";
     private static final String OPTIONS_KEY = "options";
-    private static final String SCORE_KEY = "score"; // ✅ Store score
+    private static final String SCORE_KEY = "score";
     private Button answer1, answer2, answer3, next;
     private TextView scoreText;
     private static int score;
@@ -125,4 +125,9 @@ public class QuizButtonsFragment extends Fragment {
             return answer3;
         }
     }
+
+    public static void resetScore() {
+        score = 0;
+    }
+
 }

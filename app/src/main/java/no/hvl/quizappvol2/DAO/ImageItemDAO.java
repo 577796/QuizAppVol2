@@ -32,6 +32,6 @@ public interface ImageItemDAO {
     void insertMultipleImages(List<ImageItem> imageItems);
 
     @Query("SELECT * FROM image_table")
-    List<ImageItem> getAllImagesSync(); // Synchronous method for database access
+    List<ImageItem> getAllImagesSync();
 
 }

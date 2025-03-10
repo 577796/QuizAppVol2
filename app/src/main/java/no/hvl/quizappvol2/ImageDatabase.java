@@ -1,6 +1,6 @@
 package no.hvl.quizappvol2;
 
-import static androidx.test.internal.runner.junit4.statement.UiThreadStatement.runOnUiThread;
+import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.room.Database;
@@ -8,15 +8,10 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
-import android.content.Context;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.concurrent.Executors;
 
 import no.hvl.quizappvol2.DAO.ImageItemDAO;
+import no.hvl.quizappvol2.ImageItem;
 
 @Database(entities = {ImageItem.class}, version = 2, exportSchema = false)
 public abstract class ImageDatabase extends RoomDatabase {
@@ -29,8 +24,21 @@ public abstract class ImageDatabase extends RoomDatabase {
         if (INSTANCE == null) {
             INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                             ImageDatabase.class, "image_database.db")
-                    .createFromAsset("image_database.db")
                     .fallbackToDestructiveMigration()
+                    .addCallback(new RoomDatabase.Callback() {
+                        @Override
+                        public void onCreate(@NonNull SupportSQLiteDatabase db) {
+                            super.onCreate(db);
+                            Executors.newSingleThreadExecutor().execute(() -> {
+                                ImageDatabase database = getInstance(context);
+                                ImageItemDAO dao = database.imageItemDAO();
+
+                                dao.insertImage(new ImageItem("file:///android_asset/gulbil.jpg", "Gul Bil"));
+                                dao.insertImage(new ImageItem("file:///android_asset/rodbil.jpg", "Rød Bil"));
+                                dao.insertImage(new ImageItem("file:///android_asset/hvitbil.jpg", "Hvit bil"));
+                            });
+                        }
+                    })
                     .build();
         }
         return INSTANCE;

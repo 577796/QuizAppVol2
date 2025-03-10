@@ -19,15 +19,12 @@ public class QuizActivity extends AppCompatActivity implements QuizButtonsFragme
     private List<ImageItem> quizItems;
     private int currentQuestion;
     private ExecutorService executorService;
-    private int score;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.quiz_view);
 
-        score = 0;
-        currentQuestion = 0;
 
         if (executorService == null) {
             executorService = Executors.newSingleThreadExecutor();
@@ -92,6 +89,13 @@ public class QuizActivity extends AppCompatActivity implements QuizButtonsFragme
         }
         return options;
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        QuizButtonsFragment.resetScore();
+    }
+
 
     @Override
     public void onAnswerSelected(boolean isCorrect) {}

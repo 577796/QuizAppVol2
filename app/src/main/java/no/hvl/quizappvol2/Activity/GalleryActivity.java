@@ -44,10 +44,10 @@ public class GalleryActivity extends AppCompatActivity {
         photos = findViewById(R.id.photos);
 
         imageItemDAO = ImageDatabase.getInstance(this).imageItemDAO();
-
         adapter = new RecyclerAdapter(this, new ArrayList<>());
         recyclerView.setAdapter(adapter);
 
+        // ✅ Observe changes in database and update RecyclerView
         imageItemDAO.getAllImages().observe(this, imageList -> {
             adapter.updateData(imageList);
             photosCount(imageList.size());
@@ -61,6 +61,7 @@ public class GalleryActivity extends AppCompatActivity {
             }
         });
     }
+
 
     public void openImagePicker(View view) {
         imagePickerLauncher.launch("image/*");

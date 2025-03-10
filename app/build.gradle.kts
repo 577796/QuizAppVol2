@@ -41,6 +41,7 @@ dependencies {
     implementation(libs.espresso.intents)
     annotationProcessor (libs.room.compiler)
 
+    androidTestImplementation ("androidx.test.espresso:espresso-contrib:3.5.1")
     implementation("com.github.bumptech.glide:glide:4.15.1")
     annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
 
