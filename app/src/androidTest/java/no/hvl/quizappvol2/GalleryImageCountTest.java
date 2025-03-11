@@ -1,23 +1,37 @@
 package no.hvl.quizappvol2;
 
+import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
+import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.intent.Intents.intending;
+import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
+import static androidx.test.espresso.matcher.RootMatchers.isDialog;
 import static androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom;
+import static androidx.test.espresso.matcher.ViewMatchers.withHint;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
 
+import android.app.Activity;
+import android.app.Instrumentation;
+import android.content.Intent;
+import android.net.Uri;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
+import androidx.test.espresso.intent.Intents;
+import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.rule.ActivityTestRule;
 
 import org.hamcrest.Matcher;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,18 +43,28 @@ import no.hvl.quizappvol2.Activity.GalleryActivity;
 public class GalleryImageCountTest {
 
     @Rule
-    public ActivityTestRule<GalleryActivity> activityRule =
-            new ActivityTestRule<>(GalleryActivity.class);
+    public ActivityScenarioRule<GalleryActivity> activityRule =
+            new ActivityScenarioRule<>(GalleryActivity.class);
 
     private int extractedImageCount;
 
     @Before
     public void setUp() {
+        Intents.init(); // ✅ Initialize Espresso Intents
+
+        // ✅ Ensure the TextView is displayed before extracting the count
+        onView(withId(R.id.photos)).check(matches(isDisplayed()));
+
         // Wait for the UI to load and ensure the TextView is displayed
         onView(withId(R.id.photos)).check(matches(isDisplayed()));
 
         // Extract the number from the TextView dynamically
         extractedImageCount = extractNumber(getTextFromView(R.id.photos));
+    }
+
+    @After
+    public void tearDown() {
+        Intents.release(); // ✅ Release Espresso Intents after test
     }
 
     @Test
@@ -61,13 +85,53 @@ public class GalleryImageCountTest {
         int expectedCountAfterDelete = extractedImageCount - 1;
 
         // Click the first delete button in the RecyclerView
-        onView(withId(R.id.recyclerView))
-                .perform(actionOnItemAtPosition(0, clickChildViewWithId(R.id.btnDelete)));
+        onView(withId(R.id.recyclerView)).
+                perform(actionOnItemAtPosition(0, clickChildViewWithId(R.id.btnDelete)));
 
         // Verify the image count has decreased
         onView(withId(R.id.photos))
                 .check(matches(withText("Total Images: " + expectedCountAfterDelete)));
     }
+
+    @Test
+    public void testAddImageToGallery() {
+
+        int expectedCountAfterAdd = extractedImageCount + 1;
+
+        // ✅ Stub intent to simulate selecting an image from gallery
+        Intent resultData = new Intent();
+        Uri fakeImageUri = Uri.parse("file:///android_asset/gulbil.jpg"); // Fake image path
+        resultData.setData(fakeImageUri);
+        Instrumentation.ActivityResult result =
+                new Instrumentation.ActivityResult(Activity.RESULT_OK, resultData);
+
+        // ✅ Stub response for gallery selection
+        intending(hasAction(Intent.ACTION_GET_CONTENT)).respondWith(result);
+        intending(hasAction(Intent.ACTION_OPEN_DOCUMENT)).respondWith(result);
+
+        // ✅ Click the "Add Photo" button
+        onView(withId(R.id.addPhoto)).perform(click());
+
+        // ✅ Wait for the description dialog
+        onView(withText("Add Description")) // Ensure the title matches
+                .inRoot(isDialog()) // Confirms it's inside a dialog
+                .check(matches(isDisplayed()));
+
+        // ✅ Type "Gul bil" into the first EditText in the dialog
+        onView(withHint("Enter description")) // Looks for the first input field
+                .inRoot(isDialog())
+                .perform(typeText("Gul bil"), closeSoftKeyboard());
+
+        // ✅ Click the "Save" button inside the dialog
+        onView(withText("Save"))
+                .inRoot(isDialog())
+                .perform(click());
+
+        // ✅ Verify that the image count increased
+        onView(withId(R.id.photos)).check(matches(withText("Total Images: " + expectedCountAfterAdd)));
+    }
+
+
 
     public static ViewAction clickChildViewWithId(final int id) {
         return new ViewAction() {
