@@ -86,8 +86,18 @@ public class QuizActivity extends AppCompatActivity implements QuizButtonsFragme
             if (!item.getDescription().equals(correctAnswer) && options.size() < 3) {
                 options.add(item.getDescription());
             }
+            while (options.size() < 3) {
+                options.add("Placeholder " + options.size());  // Fallback dummy answers
+            }
         }
         return options;
+    }
+
+    public String getCorrectAnswerForDisplayedImage() {
+        if (quizItems == null || currentQuestion >= quizItems.size()) {
+            return null;
+        }
+        return quizItems.get(currentQuestion - 1).getDescription(); // Get the last displayed question's answer
     }
 
     @Override

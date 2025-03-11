@@ -86,9 +86,26 @@ public class GalleryImageCountTest {
         onView(withId(R.id.recyclerView)).
                 perform(actionOnItemAtPosition(0, clickChildViewWithId(R.id.btnDelete)));
 
+        waitUntilViewTextChanges(R.id.photos, "Total Images: " + expectedCountAfterDelete);
+        
         // Verify the image count has decreased
         onView(withId(R.id.photos))
                 .check(matches(withText("Total Images: " + expectedCountAfterDelete)));
+    }
+
+    // ✅ Helper method to wait for UI updates
+    private void waitUntilViewTextChanges(int viewId, String expectedText) {
+        for (int i = 0; i < 10; i++) { // Polling max 10 times
+            try {
+                onView(withId(viewId)).check(matches(withText(expectedText)));
+                return; // Success, exit loop
+            } catch (AssertionError e) {
+                try {
+                    Thread.sleep(500); // Wait 500ms and retry
+                } catch (InterruptedException ignored) {}
+            }
+        }
+        throw new AssertionError("TextView did not update to expected value: " + expectedText);
     }
 
     @Test
@@ -98,7 +115,7 @@ public class GalleryImageCountTest {
 
         // Stub intent to simulate selecting an image from gallery
         Intent resultData = new Intent();
-        Uri fakeImageUri = Uri.parse("file:///android_asset/gulbil.jpg"); // Fake image path
+        Uri fakeImageUri = Uri.parse("file:///android_asset/images/gulbil.jpg"); // Fake image path
         resultData.setData(fakeImageUri);
         Instrumentation.ActivityResult result =
                 new Instrumentation.ActivityResult(Activity.RESULT_OK, resultData);

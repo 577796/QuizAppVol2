@@ -33,9 +33,9 @@ public abstract class ImageDatabase extends RoomDatabase {
                                 ImageDatabase database = getInstance(context);
                                 ImageItemDAO dao = database.imageItemDAO();
 
-                                dao.insertImage(new ImageItem("file:///android_asset/gulbil.jpg", "Gul Bil"));
-                                dao.insertImage(new ImageItem("file:///android_asset/rodbil.jpg", "Rød Bil"));
-                                dao.insertImage(new ImageItem("file:///android_asset/hvitbil.jpg", "Hvit bil"));
+                                dao.insertImage(new ImageItem("file:///android_asset/images/gulbil.jpg", "Gul Bil"));
+                                dao.insertImage(new ImageItem("file:///android_asset/images/rodbil.jpg", "Rød Bil"));
+                                dao.insertImage(new ImageItem("file:///android_asset/images/hvitbil.jpg", "Hvit bil"));
                             });
                         }
                     })
