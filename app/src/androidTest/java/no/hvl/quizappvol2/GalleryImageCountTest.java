@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
@@ -51,9 +52,6 @@ public class GalleryImageCountTest {
     @Before
     public void setUp() {
         Intents.init(); // ✅ Initialize Espresso Intents
-
-        // ✅ Ensure the TextView is displayed before extracting the count
-        onView(withId(R.id.photos)).check(matches(isDisplayed()));
 
         // Wait for the UI to load and ensure the TextView is displayed
         onView(withId(R.id.photos)).check(matches(isDisplayed()));
@@ -98,36 +96,36 @@ public class GalleryImageCountTest {
 
         int expectedCountAfterAdd = extractedImageCount + 1;
 
-        // ✅ Stub intent to simulate selecting an image from gallery
+        // Stub intent to simulate selecting an image from gallery
         Intent resultData = new Intent();
         Uri fakeImageUri = Uri.parse("file:///android_asset/gulbil.jpg"); // Fake image path
         resultData.setData(fakeImageUri);
         Instrumentation.ActivityResult result =
                 new Instrumentation.ActivityResult(Activity.RESULT_OK, resultData);
 
-        // ✅ Stub response for gallery selection
+        // Stub response for gallery selection
         intending(hasAction(Intent.ACTION_GET_CONTENT)).respondWith(result);
         intending(hasAction(Intent.ACTION_OPEN_DOCUMENT)).respondWith(result);
 
-        // ✅ Click the "Add Photo" button
+        // Click the "Add Photo" button
         onView(withId(R.id.addPhoto)).perform(click());
 
-        // ✅ Wait for the description dialog
+        // Wait for the description dialog
         onView(withText("Add Description")) // Ensure the title matches
                 .inRoot(isDialog()) // Confirms it's inside a dialog
                 .check(matches(isDisplayed()));
 
-        // ✅ Type "Gul bil" into the first EditText in the dialog
+        // Type "Gul bil" into the first EditText in the dialog
         onView(withHint("Enter description")) // Looks for the first input field
                 .inRoot(isDialog())
                 .perform(typeText("Gul bil"), closeSoftKeyboard());
 
-        // ✅ Click the "Save" button inside the dialog
+        // Click the "Save" button inside the dialog
         onView(withText("Save"))
                 .inRoot(isDialog())
                 .perform(click());
 
-        // ✅ Verify that the image count increased
+        // Verify that the image count increased
         onView(withId(R.id.photos)).check(matches(withText("Total Images: " + expectedCountAfterAdd)));
     }
 
@@ -155,22 +153,18 @@ public class GalleryImageCountTest {
         };
     }
 
-    // ✅ Helper method to extract number from TextView
+    // Helper method to extract number from TextView
     private int extractNumber(String text) {
         return Integer.parseInt(text.replaceAll("[^0-9]", ""));
     }
 
-    // ✅ Helper method to get text dynamically from a View
+    // Helper method to get text dynamically from a View
     private String getTextFromView(int viewId) {
-        final String[] textHolder = new String[1];
-        onView(withId(viewId)).check(matches(isDisplayed()));
-        onView(withId(viewId)).check((view, noViewFoundException) -> {
-            if (view instanceof android.widget.TextView) {
-                textHolder[0] = ((android.widget.TextView) view).getText().toString();
-            } else {
-                throw new AssertionError("View is not a TextView");
-            }
-        });
-        return textHolder[0];
+        String[] extractedText = new String[1];
+        onView(withId(R.id.photos))
+                .check(matches(isDisplayed()))
+                .check((view, noViewFoundException) ->
+                        extractedText[0] = ((TextView) view).getText().toString());
+        return extractedText[0];
     }
 }
