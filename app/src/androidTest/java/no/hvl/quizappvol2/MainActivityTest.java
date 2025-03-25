@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.After;
 import org.junit.runner.RunWith;
 
+import no.hvl.quizappvol2.Activity.GalleryActivity;
 import no.hvl.quizappvol2.Activity.MainActivity;
 import no.hvl.quizappvol2.Activity.QuizActivity;
 
@@ -39,7 +40,16 @@ public class MainActivityTest {
     }
 
     @Test
-    public void testNavigationToQuizActivity() {
+    public void testNavigationToGalleryActivity() {
+        // Click the button that starts the Gallery
+        onView(withId(R.id.galleryButton)).perform(click());
+
+        // Check that the Gallery is displayed
+        intended(hasComponent(GalleryActivity.class.getName()));
+    }
+    @Test
+    public void testNavigationToQuizActivity() throws InterruptedException {
+
         // Click the button that starts the Quiz
         onView(withId(R.id.quizButton)).perform(click());
 

@@ -12,14 +12,18 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import no.hvl.quizappvol2.DAO.ImageItemDAO;
 import no.hvl.quizappvol2.ImageDatabase;
 import no.hvl.quizappvol2.ImageItem;
@@ -27,111 +31,135 @@ import no.hvl.quizappvol2.RecyclerAdapter;
 import no.hvl.quizappvol2.R;
 
 public class GalleryActivity extends AppCompatActivity {
-    private RecyclerView recyclerView;
-    private RecyclerAdapter adapter;
-    private ImageItemDAO imageItemDAO;
-    private ActivityResultLauncher<String> imagePickerLauncher;
-    private List<Uri> selectedImageUris = new ArrayList<>();
-    private TextView photos;
+
+    private RecyclerView recyclerView; // UI list to show all images
+    private RecyclerAdapter adapter; // Adapter to bind data to RecyclerView
+    private ImageItemDAO imageItemDAO; // DAO for accessing database
+    private ActivityResultLauncher<String> imagePickerLauncher; // Launcher for selecting multiple images
+    private List<Uri> selectedImageUris = new ArrayList<>(); // Stores URIs of user-selected images
+    private TextView photos; // Displays number of images
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.recycler_view);
+        setContentView(R.layout.recycler_view); // Set the layout with RecyclerView
 
-        recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        photos = findViewById(R.id.photos);
+        recyclerView = findViewById(R.id.recyclerView); // Get RecyclerView from layout
+        recyclerView.setLayoutManager(new LinearLayoutManager(this)); // Display items in vertical list
+        photos = findViewById(R.id.photos); // Get reference to the TextView for image count
 
-        imageItemDAO = ImageDatabase.getInstance(this).imageItemDAO();
-        adapter = new RecyclerAdapter(this, new ArrayList<>());
-        recyclerView.setAdapter(adapter);
+        imageItemDAO = ImageDatabase.getInstance(this).imageItemDAO(); // Get DAO from Room DB
+        adapter = new RecyclerAdapter(this, new ArrayList<>()); // Create adapter with empty list
+        recyclerView.setAdapter(adapter); // Attach adapter to RecyclerView
 
+        // Observe changes in the image table using LiveData
         imageItemDAO.getAllImages().observe(this, imageList -> {
-            adapter.updateData(imageList);
-            photosCount(imageList.size());
+            adapter.updateData(imageList); // Update adapter when data changes
+            photosCount(imageList.size()); // Update image count display
         });
 
-        imagePickerLauncher = registerForActivityResult(new ActivityResultContracts.GetMultipleContents(), uris -> {
-            if (uris != null && !uris.isEmpty()) {
-                selectedImageUris.clear();
-                selectedImageUris.addAll(uris);
-                showDescriptionDialog();
-            }
-        });
+        // Initialize image picker launcher for selecting multiple images
+        imagePickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.GetMultipleContents(),
+                uris -> {
+                    if (uris != null && !uris.isEmpty()) {
+                        selectedImageUris.clear(); // Clear previous selections
+                        selectedImageUris.addAll(uris); // Add selected images
+                        showDescriptionDialog(); // Show input fields for descriptions
+                    }
+                }
+        );
     }
 
-
+    // Triggered when user taps the "add images" button
     public void openImagePicker(View view) {
-        imagePickerLauncher.launch("image/*");
+        imagePickerLauncher.launch("image/*"); // Launches system image picker for multiple image selection
     }
 
+    // Entry point to the image description process
+    // Starts a loop of dialogs, one for each selected image
     private void showDescriptionDialog() {
+        showNextDescriptionDialog(0); // Start with the first image in the list
+    }
+
+    // Recursively displays a dialog for one image at a time, asking the user to add a description
+    private void showNextDescriptionDialog(int index) {
+        if (index >= selectedImageUris.size()) {
+            // All images processed → update UI
+            refreshGallery();
+            return;
+        }
+
+        // Get current image URI to display
+        Uri currentUri = selectedImageUris.get(index);
+
+        // Set up the dialog builder
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Add Description");
 
-        ScrollView scrollView = new ScrollView(this);
+        // Create a vertical layout to hold the image and description input
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
-        scrollView.addView(layout);
 
-        List<EditText> descriptionInputs = new ArrayList<>();
+        // Show the selected image using Glide
+        ImageView imageView = new ImageView(this);
+        Glide.with(this).load(currentUri).into(imageView);
+        layout.addView(imageView);
 
-        for (Uri uri : selectedImageUris) {
-            ImageView imageView = new ImageView(this);
-            Glide.with(this).load(uri).into(imageView);
-            layout.addView(imageView);
+        // Input field for user to type in a description
+        EditText input = new EditText(this);
+        input.setHint("Enter description");
+        layout.addView(input);
 
-            EditText input = new EditText(this);
-            input.setHint("Enter description");
-            layout.addView(input);
-            descriptionInputs.add(input);
-        }
+        // Attach the layout to the dialog
+        builder.setView(layout);
 
-        builder.setView(scrollView);
-
+        // Save button: persist image + description, then continue to next image
         builder.setPositiveButton("Save", (dialog, which) -> {
-            List<ImageItem> imageItems = new ArrayList<>();
-            for (int i = 0; i < selectedImageUris.size(); i++) {
-                String imagePath = selectedImageUris.get(i).toString();
-                String description = descriptionInputs.get(i).getText().toString().trim();
-                imageItems.add(new ImageItem(imagePath, description));
-            }
-            saveImages(imageItems);
+            String imagePath = currentUri.toString();
+            String description = input.getText().toString().trim();
+            ImageItem item = new ImageItem(imagePath, description); // Create a new item for DB
+
+            // Save to DB in background thread
+            new Thread(() -> {
+                try {
+                    // Request long-term permission to access the image
+                    getContentResolver().takePersistableUriPermission(
+                            currentUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                } catch (SecurityException e) {
+                    Log.e("GalleryActivity", "URI permission error", e);
+                }
+
+                // Insert item into database
+                imageItemDAO.insertImage(item);
+
+                // Proceed to the next image on the UI thread
+                runOnUiThread(() -> showNextDescriptionDialog(index + 1));
+            }).start();
         });
-        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+        // Cancel button: skip current image and move on
+        builder.setNegativeButton("Cancel", (dialog, which) -> {
+            runOnUiThread(() -> showNextDescriptionDialog(index + 1));
+        });
+
+        // Show the dialog
         builder.show();
     }
 
-    private void saveImages(List<ImageItem> imageItems) {
-        new Thread(() -> {
-            for (ImageItem item : imageItems) {
-                Uri imageUri = Uri.parse(item.getImagePath());
-                try {
-                    getContentResolver().takePersistableUriPermission(imageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                } catch (SecurityException e) {
-                    Log.e("GalleryActivity", "Failed to persist URI permission", e);
-                }
-                imageItemDAO.insertImage(item);
-            }
-            runOnUiThread(() -> {
-                Toast.makeText(this, "Images added successfully!", Toast.LENGTH_SHORT).show();
-                refreshGallery(); // Ensure UI update happens on the main thread
-            });
-        }).start();
-    }
 
-
+    // Forces the RecyclerView to refresh by re-observing LiveData
     private void refreshGallery() {
-        runOnUiThread(() -> { // Ensure LiveData observe is on the main thread
+        runOnUiThread(() -> {
             imageItemDAO.getAllImages().observe(this, imageList -> {
-                adapter.updateData(imageList);
-                photosCount(imageList.size()); // Update count when images refresh
+                adapter.updateData(imageList); // Update list in RecyclerView
+                photosCount(imageList.size()); // Update image count
             });
         });
     }
 
+    // Displays the current number of images
     private void photosCount(int count) {
-        photos.setText("Total Images: " + count);
+        photos.setText("Total Images: " + count); // Show in TextView
     }
 }

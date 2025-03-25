@@ -11,13 +11,13 @@
       <SelectionState runConfigName="QuizActivityScoreTest">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="Tests in 'no.hvl.quizappvol2'">
+      <SelectionState runConfigName="testNavigationToQuizActivity()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
       <SelectionState runConfigName="testScoreDoNotIncreaseOnWrong()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="testDeleteFirstImage()">
+      <SelectionState runConfigName="Tests in 'no.hvl.quizappvol2'">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

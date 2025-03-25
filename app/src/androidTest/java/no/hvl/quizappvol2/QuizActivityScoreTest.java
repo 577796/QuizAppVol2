@@ -12,9 +12,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.AllOf.allOf;
 
-import android.util.Log;
 import android.widget.TextView;
-
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -32,16 +30,20 @@ public class QuizActivityScoreTest {
     public ActivityScenarioRule<QuizActivity> activityRule =
             new ActivityScenarioRule<>(QuizActivity.class);
 
+    //Variabel for å lagre score
     private int extractedScore;
+    //Variabel for å lagre correkts score.
     private String correctAnswer;
 
+
     @Before
-    public void setUp() {
+    public void setUp() throws InterruptedException {
         // Ensure the score view is displayed
         onView(withId(R.id.score)).check(matches(isDisplayed()));
 
+        // Ensure score is reset before each test
         activityRule.getScenario().onActivity(activity -> {
-            QuizButtonsFragment.resetScore();  // Ensure score is reset before each test
+            QuizButtonsFragment.resetScore();
         });
 
         // Extract initial score value
@@ -53,8 +55,10 @@ public class QuizActivityScoreTest {
         });
     }
 
+
     @Test
-    public void testScoreIncreaseOnCorrect() {
+    public void testScoreIncreaseOnCorrect(){
+
         // Click the correct answer button
         onView(withText(correctAnswer)).perform(click());
 

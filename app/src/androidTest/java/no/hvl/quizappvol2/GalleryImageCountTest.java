@@ -1,6 +1,5 @@
 package no.hvl.quizappvol2;
 
-import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static androidx.test.espresso.action.ViewActions.typeText;
@@ -75,7 +74,7 @@ public class GalleryImageCountTest {
     }
 
     @Test
-    public void testDeleteFirstImage() {
+    public void testDeleteFirstImage() throws InterruptedException {
         if (extractedImageCount == 0) {
             throw new AssertionError("No images available for deletion.");
         }
@@ -86,26 +85,11 @@ public class GalleryImageCountTest {
         onView(withId(R.id.recyclerView)).
                 perform(actionOnItemAtPosition(0, clickChildViewWithId(R.id.btnDelete)));
 
-        waitUntilViewTextChanges(R.id.photos, "Total Images: " + expectedCountAfterDelete);
-        
+        Thread.sleep(500);
+
         // Verify the image count has decreased
         onView(withId(R.id.photos))
                 .check(matches(withText("Total Images: " + expectedCountAfterDelete)));
-    }
-
-    // ✅ Helper method to wait for UI updates
-    private void waitUntilViewTextChanges(int viewId, String expectedText) {
-        for (int i = 0; i < 10; i++) { // Polling max 10 times
-            try {
-                onView(withId(viewId)).check(matches(withText(expectedText)));
-                return; // Success, exit loop
-            } catch (AssertionError e) {
-                try {
-                    Thread.sleep(500); // Wait 500ms and retry
-                } catch (InterruptedException ignored) {}
-            }
-        }
-        throw new AssertionError("TextView did not update to expected value: " + expectedText);
     }
 
     @Test
