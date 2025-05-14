@@ -6,10 +6,23 @@
 
     <FrameLayout
         android:id="@+id/imageContainer"
-        android:layout_margin="20dp"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="15dp"
+        android:layout_margin="20dp"
         android:layout_weight="1" />
+
+
+    <TextView
+        android:id="@+id/scoreDisplay"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginBottom="8dp"
+        android:text="Score: 0"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:textAlignment="center" />
+
 
     <FrameLayout
         android:id="@+id/buttonsContainer"
