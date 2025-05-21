@@ -2,7 +2,6 @@
 package no.hvl.quizappvol2.Activity;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 

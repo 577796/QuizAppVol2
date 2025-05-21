@@ -1,4 +1,3 @@
-// ✅ Cleaned QuizViewModel.java
 package no.hvl.quizappvol2.ViewModel;
 
 import android.app.Application;

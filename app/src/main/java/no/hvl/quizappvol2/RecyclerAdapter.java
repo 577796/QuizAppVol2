@@ -20,7 +20,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import no.hvl.quizappvol2.DAO.ImageItemDAO;
-import no.hvl.quizappvol2.ImageDatabase;
 
 // RecyclerAdapter is a custom adapter for RecyclerView to display a list of ImageItems
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHolder> {

@@ -1,4 +1,4 @@
-// ✅ QuizActivityTest.java — Validates score logic after selecting correct and incorrect answers
+
 package no.hvl.quizappvol2;
 
 import static androidx.test.espresso.Espresso.onView;
@@ -22,7 +22,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
-public class QuizActivityTest {
+public class QuizActivityScoreTest {
 
     @Test
     public void testCorrectAnswerIncreasesScore() throws InterruptedException {

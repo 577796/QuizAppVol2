@@ -1,4 +1,4 @@
-// ✅ Cleaned QuizButtonsFragment.java
+
 package no.hvl.quizappvol2.Fragments;
 
 import android.graphics.Color;
