@@ -80,14 +80,13 @@ public class QuizViewModel extends AndroidViewModel {
         return options;
     }
 
-    public boolean checkAnswer(String selectedAnswer) {
+    public void checkAnswer(String selectedAnswer) {
         String correct = quizItems.get(currentQuestion).getDescription();
         boolean isCorrect = correct.equals(selectedAnswer);
         if (isCorrect) {
-            Integer current = score.getValue();
-            score.setValue((current != null ? current : 0) + 1);
+            Integer current = score.getValue() != null ? score.getValue() : 0;
+            score.setValue(current + 1);
         }
-        return isCorrect;
     }
 
     public void advanceQuestion() {

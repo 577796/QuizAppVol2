@@ -1,4 +1,3 @@
-// ✅ Cleaned QuizActivity.java
 package no.hvl.quizappvol2.Activity;
 
 import android.os.Bundle;

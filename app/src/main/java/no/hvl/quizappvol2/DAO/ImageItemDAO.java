@@ -21,21 +21,9 @@ public interface ImageItemDAO {
     @Delete
     void deleteImage(ImageItem imageItem);
 
-    // Returns a LiveData object containing the count of images in the table
-    @Query("SELECT COUNT(*) FROM image_table")
-    LiveData<Integer> getImageCountLive();
-
     // Retrieves all images in the table as LiveData (to be observed)
     @Query("SELECT * FROM image_table")
     LiveData<List<ImageItem>> getAllImages();
-
-    // Deletes an image based on its ID
-    @Query("DELETE FROM image_table WHERE id = :imageId")
-    void deleteImageById(int imageId);
-
-    // Inserts a list of ImageItems into the table
-    @Insert
-    void insertMultipleImages(List<ImageItem> imageItems);
 
     // Retrieves all images in the table as a plain List (non-LiveData, synchronous access)
     @Query("SELECT * FROM image_table")

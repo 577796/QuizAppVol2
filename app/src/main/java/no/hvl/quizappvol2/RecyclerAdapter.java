@@ -21,10 +21,9 @@ import java.util.concurrent.Executors;
 
 import no.hvl.quizappvol2.DAO.ImageItemDAO;
 
-// RecyclerAdapter is a custom adapter for RecyclerView to display a list of ImageItems
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHolder> {
 
-    private Context context; // Android context (used to access resources, DB, etc.)
+    private Context context; // used to access resources, DB, etc
     private List<ImageItem> imageList; // The list of images to display
     private final ImageItemDAO imageItemDAO; // DAO for performing database operations
     private final ExecutorService executorService; // Used for background threading
@@ -35,6 +34,19 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
         this.imageList = imageList;
         this.imageItemDAO = ImageDatabase.getInstance(context).imageItemDAO(); // Gets DAO from singleton DB instance
         this.executorService = Executors.newSingleThreadExecutor(); // Creates a single-thread executor for background tasks
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        ImageView imageView;
+        TextView descriptionText;
+        Button deleteButton;
+
+        public ViewHolder(@NonNull View itemView) {
+            super(itemView);
+            imageView = itemView.findViewById(R.id.image); // Image view from layout
+            descriptionText = itemView.findViewById(R.id.description); // Text view for description
+            deleteButton = itemView.findViewById(R.id.btnDelete); // Button to delete the item
+        }
     }
 
     // Called when a new ViewHolder needs to be created
@@ -84,19 +96,5 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
                 notifyItemRemoved(position); // Notifies RecyclerView to remove the item visually
             });
         });
-    }
-
-    // ViewHolder class that holds references to the views inside each item layout
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        ImageView imageView;
-        TextView descriptionText;
-        Button deleteButton;
-
-        public ViewHolder(@NonNull View itemView) {
-            super(itemView);
-            imageView = itemView.findViewById(R.id.image); // Image view from layout
-            descriptionText = itemView.findViewById(R.id.description); // Text view for description
-            deleteButton = itemView.findViewById(R.id.btnDelete); // Button to delete the item
-        }
     }
 }
